@@ -5,24 +5,94 @@ import type {
 import { useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { StorageData, getData } from "../storage.server";
+import { StorageData, getStorageData } from "../storage.server";
+
+type ShopifyProduct = {
+  id: string,
+  title: string,
+  url: string,
+  image: string | null,
+  imageAlt: string,
+};
+
+type ProductNodeImage = {
+  url: string,
+  altText: string | null,
+};
+
+type ProductNode = {
+  id: string,
+  title: string,
+  handle: string,
+  featuredImage: ProductNodeImage | null,
+};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  const data = getData();
+  const { admin, session } = await authenticate.admin(request);
+  const storageData = getStorageData();
+  const shopDomain = session.shop;
+  const allProductIds = new Set<string>();
 
-  return data;
+  for (const userData of Object.values(storageData)) {
+    for (const listData of Object.values(userData)) {
+      for (const productId of listData.products) {
+        allProductIds.add(productId);
+      }
+    }
+  }
+
+  const productGids = [...allProductIds].map((id) => `gid://shopify/Product/${id}`);
+
+  const productsResponse = await admin.graphql(
+    `#graphql
+    query GetProducts($ids: [ID!]!) {
+      nodes(ids: $ids) {
+        ... on Product {
+          id
+          title
+          handle
+          featuredImage {
+            url
+            altText
+          }
+        }
+      }
+    }`,
+    { variables: { ids: productGids } },
+  );
+
+  const productNodes: (ProductNode | null)[] = (await productsResponse.json()).data?.nodes;
+  const products: Record<string, ShopifyProduct> = {};
+
+  for (const node of productNodes) {
+    if (!node) {
+      continue;
+    }
+    
+    const numericId = node.id.replace("gid://shopify/Product/", "");
+    
+    products[numericId] = {
+      id: numericId,
+      title: node.title,
+      url: `https://${shopDomain}/products/${node.handle}`,
+      image: node.featuredImage?.url ?? null,
+      imageAlt: node.featuredImage?.altText ?? node.title,
+    };
+  }
+
+  return { storageData, products };
 };
 
 export type ProductsTableProps = {
-  data: StorageData,
+  storageData: StorageData;
+  products: Record<string, ShopifyProduct>;
 };
 
-export const ProductsTable = ({ data }: ProductsTableProps) => {
+export const ProductsTable = ({ storageData, products }: ProductsTableProps) => {
   const productCounts: Record<string, number> = {};
 
-  for (const userData of Object.values(data)) {
-    const flatProducts = Object.values(userData).flatMap(list => list.products);
+  for (const userData of Object.values(storageData)) {
+    const flatProducts = Object.values(userData).flatMap((list) => list.products);
     const uniqueProducts = [...new Set(flatProducts)];
 
     for (const productId of uniqueProducts) {
@@ -39,16 +109,38 @@ export const ProductsTable = ({ data }: ProductsTableProps) => {
       {productCountList.length > 0 ? (
         <s-table>
           <s-table-header-row>
-            <s-table-header>Product ID</s-table-header>
+            <s-table-header>Product</s-table-header>
             <s-table-header>Users Added</s-table-header>
           </s-table-header-row>
           <s-table-body>
-            {productCountList.map(({ productId, count }) => (
-              <s-table-row key={productId}>
-                <s-table-cell>{productId}</s-table-cell>
-                <s-table-cell>{count}</s-table-cell>
-              </s-table-row>
-            ))}
+            {productCountList.map(({ productId, count }) => {
+              const product = products[productId];
+
+              return (
+                <s-table-row key={productId}>
+                  <s-table-cell>
+                    <a
+                      href={product.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
+                    >
+                      {product.image && (
+                        <img
+                          src={product.image}
+                          alt={product.imageAlt}
+                          width={40}
+                          height={40}
+                          style={{ objectFit: "cover", borderRadius: "4px" }}
+                        />
+                      )}
+                      {product.title}
+                    </a>
+                  </s-table-cell>
+                  <s-table-cell>{count}</s-table-cell>
+                </s-table-row>
+              );
+            })}
           </s-table-body>
         </s-table>
       ) : (
@@ -59,27 +151,43 @@ export const ProductsTable = ({ data }: ProductsTableProps) => {
 };
 
 export type UsersTableProps = {
-  data: StorageData,
+  storageData: StorageData;
+  products: Record<string, ShopifyProduct>;
 };
 
-export const UsersTable = ({ data }: UsersTableProps) => {
+export const UsersTable = ({ storageData, products }: UsersTableProps) => {
   return (
     <s-section heading="User Lists">
-      {Object.keys(data).length > 0 ? (
+      {Object.keys(storageData).length > 0 ? (
         <s-table>
           <s-table-header-row>
             <s-table-header>User ID</s-table-header>
-            <s-table-header>List</s-table-header>
+            <s-table-header>List name</s-table-header>
             <s-table-header>Products</s-table-header>
           </s-table-header-row>
           <s-table-body>
-            {Object.entries(data).map(([userId, userSavedProducts]) =>
+            {Object.entries(storageData).map(([userId, userSavedProducts]) =>
               Object.entries(userSavedProducts).map(([listId, listData]) => (
                 <s-table-row key={`${userId}-${listId}`}>
                   <s-table-cell>{userId}</s-table-cell>
                   <s-table-cell>{listData.name}</s-table-cell>
                   <s-table-cell>
-                    {listData.products.length === 0 ? "Empty" : listData.products.join(", ")}
+                    {listData.products.length === 0 ? (
+                      "Empty"
+                    ) : (
+                      <span style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                        {listData.products.map((productId, index) => {
+                          const product = products[productId];
+
+                          return (
+                            <span key={productId}>
+                              <a href={product.url} target="_blank" rel="noreferrer">{product.title}</a>
+                              {index < listData.products.length - 1 ? "," : ""}
+                            </span>
+                          )
+                        })}
+                      </span>
+                    )}
                   </s-table-cell>
                 </s-table-row>
               ))
@@ -94,12 +202,12 @@ export const UsersTable = ({ data }: UsersTableProps) => {
 };
 
 export const Index = () => {
-  const data = useLoaderData<typeof loader>();
+  const { storageData, products } = useLoaderData<typeof loader>();
 
   return (
     <s-page heading="Saved Products">
-      <ProductsTable data={data} />
-      <UsersTable data={data} />
+      <ProductsTable storageData={storageData} products={products} />
+      <UsersTable storageData={storageData} products={products} />
     </s-page>
   );
 };

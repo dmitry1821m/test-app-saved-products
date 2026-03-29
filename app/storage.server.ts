@@ -11,16 +11,16 @@ export type StorageData = {
   [userId: string]: UserData,
 };
 
-export const getData = (): StorageData => {
+export const getStorageData = (): StorageData => {
   return JSON.parse(readFileSync("./data/main.json").toString());
 };
 
-export const setData = (data: StorageData): void => {
+export const setStorageData = (data: StorageData): void => {
   writeFileSync("./data/main.json", JSON.stringify(data, null, 2));
 };
 
 export const initUserSavedProducts = (userId: string): void => {
-  const data = getData();
+  const data = getStorageData();
 
   data[userId] = {
     main: {
@@ -29,24 +29,24 @@ export const initUserSavedProducts = (userId: string): void => {
     },
   };
 
-  setData(data);
+  setStorageData(data);
 };
 
 export const getUserSavedProducts = (userId: string): UserData | undefined => {
-  const data = getData();
+  const data = getStorageData();
   return data[userId];
 };
 
 export const addProductToUserSavedProducts = (userId: string, productId: string): void => {
-  const data = getData();
+  const data = getStorageData();
   data[userId].main.products.push(productId);
-  setData(data);
+  setStorageData(data);
 };
 
 export const removeProductFromUserSavedProducts = (userId: string, productId: string): void => {
-  const data = getData();
+  const data = getStorageData();
   data[userId].main.products = data[userId].main.products.filter(item => item !== productId);
-  setData(data);
+  setStorageData(data);
 };
 
 export const toggleProductInUserSavedProducts = (userId: string, productId: string): void => {
