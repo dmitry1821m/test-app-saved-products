@@ -110,12 +110,12 @@ export const ProductsTable = ({ storageData, products }: ProductsTableProps) => 
     .sort((a, b) => b.count - a.count);
 
   return (
-    <s-section heading="Saved Products">
+    <s-section heading="Popular Products">
       {productCountList.length > 0 ? (
         <s-table>
           <s-table-header-row>
             <s-table-header>Product</s-table-header>
-            <s-table-header>Users Added</s-table-header>
+            <s-table-header>Users added</s-table-header>
           </s-table-header-row>
           <s-table-body>
             {productCountList.map(({ productId, count }) => {

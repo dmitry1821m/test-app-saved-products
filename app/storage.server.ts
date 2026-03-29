@@ -14,11 +14,11 @@ export type StorageData = {
 };
 
 export const getStorageData = (): StorageData => {
-  return JSON.parse(readFileSync("./storage-data.json").toString());
+  return JSON.parse(readFileSync("./storage/data.json").toString());
 };
 
 export const setStorageData = (data: StorageData): void => {
-  writeFileSync("./storage-data.json", JSON.stringify(data, null, 2));
+  writeFileSync("./storage/data.json", JSON.stringify(data, null, 2));
 };
 
 export const initUserSavedProducts = (userId: string): void => {
