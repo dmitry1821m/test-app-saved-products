@@ -35,15 +35,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return Response.json({ error: "Can't get data" }, { status: 500 });
   }
 
-  const productIds = getUserSavedProducts(customerId) ?? [];
+  const userSavedProducts = getUserSavedProducts(customerId);
 
-  if (productIds.length === 0) {
-    return Response.json({ main: [] });
+  if (!userSavedProducts) {
+    return Response.json(null);
   }
 
-  const gids = productIds.map((id) => `gid://shopify/Product/${id}`);
+  const gids = userSavedProducts.main.products.map((id) => `gid://shopify/Product/${id}`);
 
-  const response = await admin.graphql(
+  const shopifyProductsResponse = await admin.graphql(
     `#graphql
     query GetSavedProducts($ids: [ID!]!) {
       nodes(ids: $ids) {
@@ -61,7 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     { variables: { ids: gids } },
   );
 
-  const { data } = await response.json();
+  const { data } = await shopifyProductsResponse.json();
   const nodes: ProductNode[] = data?.nodes ?? [];
   const products: Product[] = [];
 
@@ -83,5 +83,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     products.push(product);
   });
 
-  return Response.json({ main: products });
+  const response = {
+    main: {
+      ...userSavedProducts.main,
+      products: products,
+    },
+  };
+
+  return Response.json(response);
 }

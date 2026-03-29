@@ -16,7 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return Response.json({ error: "Missing required param: product_id" }, { status: 400 });
   }
 
-  const isSaved = getUserSavedProducts(customerId)?.includes(productId) ?? false;
+  const isSaved = getUserSavedProducts(customerId)?.main.products.includes(productId) ?? false;
 
   return Response.json({ isSaved });
 }

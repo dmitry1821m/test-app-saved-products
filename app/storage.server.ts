@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync } from "fs";
 
 export type UserData = {
-  [savedProductsListId: string]: string[],
+  [savedProductsListId: string]: {
+    name: string,
+    products: string[],
+  },
 };
 
 export type StorageData = {
@@ -16,33 +19,40 @@ export const setData = (data: StorageData): void => {
   writeFileSync("./data/main.json", JSON.stringify(data, null, 2));
 };
 
-export const createUserSavedProductsList = (userId: string): void => {
+export const initUserSavedProducts = (userId: string): void => {
   const data = getData();
-  data[userId] = { main: [] };
+
+  data[userId] = {
+    main: {
+      name: "Main",
+      products: [],
+    },
+  };
+
   setData(data);
 };
 
-export const getUserSavedProducts = (userId: string): string[] | undefined => {
+export const getUserSavedProducts = (userId: string): UserData | undefined => {
   const data = getData();
-  return data[userId]?.main;
+  return data[userId];
 };
 
 export const addProductToUserSavedProducts = (userId: string, productId: string): void => {
   const data = getData();
-  data[userId].main.push(productId);
+  data[userId].main.products.push(productId);
   setData(data);
 };
 
 export const removeProductFromUserSavedProducts = (userId: string, productId: string): void => {
   const data = getData();
-  data[userId].main = data[userId].main.filter(item => item !== productId);
+  data[userId].main.products = data[userId].main.products.filter(item => item !== productId);
   setData(data);
 };
 
 export const toggleProductInUserSavedProducts = (userId: string, productId: string): void => {
   const savedProducts = getUserSavedProducts(userId);
 
-  if (savedProducts?.includes(productId)) {
+  if (savedProducts?.main.products.includes(productId)) {
     removeProductFromUserSavedProducts(userId, productId);
   } else {
     addProductToUserSavedProducts(userId, productId);

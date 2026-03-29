@@ -22,9 +22,10 @@ export const ProductsTable = ({ data }: ProductsTableProps) => {
   const productCounts: Record<string, number> = {};
 
   for (const userData of Object.values(data)) {
-    const userProducts = [...new Set(Object.values(userData).flat())];
+    const flatProducts = Object.values(userData).flatMap(list => list.products);
+    const uniqueProducts = [...new Set(flatProducts)];
 
-    for (const productId of userProducts) {
+    for (const productId of uniqueProducts) {
       productCounts[productId] = (productCounts[productId] ?? 0) + 1;
     }
   }
@@ -73,12 +74,12 @@ export const UsersTable = ({ data }: UsersTableProps) => {
           </s-table-header-row>
           <s-table-body>
             {Object.entries(data).map(([userId, userSavedProducts]) =>
-              Object.entries(userSavedProducts).map(([listId, products]) => (
+              Object.entries(userSavedProducts).map(([listId, listData]) => (
                 <s-table-row key={`${userId}-${listId}`}>
                   <s-table-cell>{userId}</s-table-cell>
-                  <s-table-cell>{listId}</s-table-cell>
+                  <s-table-cell>{listData.name}</s-table-cell>
                   <s-table-cell>
-                    {products.length === 0 ? "Empty" : products.join(", ")}
+                    {listData.products.length === 0 ? "Empty" : listData.products.join(", ")}
                   </s-table-cell>
                 </s-table-row>
               ))

@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
 import {
-  createUserSavedProductsList,
+  initUserSavedProducts,
   getUserSavedProducts,
   toggleProductInUserSavedProducts,
 } from "../storage.server";
@@ -24,11 +24,11 @@ export async function action({ request }: ActionFunctionArgs) {
   const userSavedProducts = getUserSavedProducts(customerId);
 
   if (!userSavedProducts) {
-    createUserSavedProductsList(customerId);
+    initUserSavedProducts(customerId);
   }
 
   toggleProductInUserSavedProducts(customerId, productId);
-  const isSaved = getUserSavedProducts(customerId)?.includes(productId) ?? false;
+  const isSaved = getUserSavedProducts(customerId)?.main.products.includes(productId) ?? false;
 
   return Response.json({ isSaved });
 }
