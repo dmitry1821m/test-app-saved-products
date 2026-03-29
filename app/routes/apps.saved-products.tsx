@@ -41,7 +41,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return Response.json(null);
   }
 
-  const gids = userSavedProducts.main.products.map((id) => `gid://shopify/Product/${id}`);
+  const gids = userSavedProducts.main.products.map((id: string): string => {
+    return `gid://shopify/Product/${id}`;
+  });
 
   const shopifyProductsResponse = await admin.graphql(
     `#graphql
@@ -65,9 +67,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const nodes: ProductNode[] = data?.nodes ?? [];
   const products: Product[] = [];
 
-  nodes.forEach((node: ProductNode | null) => {
+  nodes.forEach((node: ProductNode | null): void => {
     if (!node) {
-      return null;
+      return;
     }
 
     const numericId = node.id.replace("gid://shopify/Product/", "");

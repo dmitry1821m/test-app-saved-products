@@ -1,10 +1,12 @@
 import { readFileSync, writeFileSync } from "fs";
 
+export type ProductListData = {
+  name: string,
+  products: string[],
+};
+
 export type UserData = {
-  [savedProductsListId: string]: {
-    name: string,
-    products: string[],
-  },
+  [savedProductsListId: string]: ProductListData,
 };
 
 export type StorageData = {
@@ -45,7 +47,11 @@ export const addProductToUserSavedProducts = (userId: string, productId: string)
 
 export const removeProductFromUserSavedProducts = (userId: string, productId: string): void => {
   const data = getStorageData();
-  data[userId].main.products = data[userId].main.products.filter(item => item !== productId);
+
+  data[userId].main.products = data[userId].main.products.filter((item: string): boolean => {
+    return item !== productId;
+  });
+
   setStorageData(data);
 };
 

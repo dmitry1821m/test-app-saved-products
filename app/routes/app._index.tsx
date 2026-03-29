@@ -5,7 +5,7 @@ import type {
 import { useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { StorageData, getStorageData } from "../storage.server";
+import { ProductListData, StorageData, getStorageData } from "../storage.server";
 
 type ShopifyProduct = {
   id: string,
@@ -41,7 +41,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
   }
 
-  const productGids = [...allProductIds].map((id) => `gid://shopify/Product/${id}`);
+  const productGids = [...allProductIds].map((id: string): string => {
+    return `gid://shopify/Product/${id}`;
+  });
 
   const productsResponse = await admin.graphql(
     `#graphql
@@ -92,7 +94,10 @@ export const ProductsTable = ({ storageData, products }: ProductsTableProps) => 
   const productCounts: Record<string, number> = {};
 
   for (const userData of Object.values(storageData)) {
-    const flatProducts = Object.values(userData).flatMap((list) => list.products);
+    const flatProducts = Object.values(userData).flatMap((list: ProductListData): string[] => {
+      return list.products;
+    });
+
     const uniqueProducts = [...new Set(flatProducts)];
 
     for (const productId of uniqueProducts) {
