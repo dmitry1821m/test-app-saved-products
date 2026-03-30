@@ -121,6 +121,10 @@ export const ProductsTable = ({ storageData, products }: ProductsTableProps) => 
             {productCountList.map(({ productId, count }) => {
               const product = products[productId];
 
+              if (!product) {
+                return;
+              }
+
               return (
                 <s-table-row key={productId}>
                   <s-table-cell>
@@ -183,6 +187,10 @@ export const UsersTable = ({ storageData, products }: UsersTableProps) => {
                       <span style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                         {listData.products.map((productId, index) => {
                           const product = products[productId];
+                          
+                          if (!product) {
+                            return;
+                          }
 
                           return (
                             <span key={productId}>
