@@ -9,11 +9,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const productId = url.searchParams.get("product_id");
 
   if (!customerId) {
-    return Response.json({ error: "Not logged in" }, { status: 401 });
+    return Response.json({ error: "Not logged in" }, { status: 500 });
   }
 
   if (!productId) {
-    return Response.json({ error: "Missing required param: product_id" }, { status: 400 });
+    return Response.json({ error: "No product ID" }, { status: 500 });
   }
 
   const isSaved = getUserSavedProducts(customerId)?.main.products.includes(productId) ?? false;
