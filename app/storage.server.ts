@@ -1,16 +1,16 @@
 import { readFileSync, writeFileSync } from "fs";
 
 export type ProductListData = {
-  name: string,
-  products: string[],
+  name: string;
+  products: string[];
 };
 
 export type UserData = {
-  [savedProductsListId: string]: ProductListData,
+  [savedProductsListId: string]: ProductListData;
 };
 
 export type StorageData = {
-  [userId: string]: UserData,
+  [userId: string]: UserData;
 };
 
 export const getStorageData = (): StorageData => {

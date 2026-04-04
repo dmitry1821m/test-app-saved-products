@@ -8,7 +8,7 @@ import {
 
 export async function action({ request }: ActionFunctionArgs) {
   await authenticate.public.appProxy(request);
-  
+
   const url = new URL(request.url);
   const customerId = url.searchParams.get("logged_in_customer_id");
   const productId = url.searchParams.get("product_id");

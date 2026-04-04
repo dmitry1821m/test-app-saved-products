@@ -1,30 +1,27 @@
-import type {
-  HeadersFunction,
-  LoaderFunctionArgs,
-} from "react-router";
+import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { ProductListData, StorageData, getStorageData } from "../storage.server";
 
 type ShopifyProduct = {
-  id: string,
-  title: string,
-  url: string,
-  image: string | null,
-  imageAlt: string,
+  id: string;
+  title: string;
+  url: string;
+  image: string | null;
+  imageAlt: string;
 };
 
 type ProductNodeImage = {
-  url: string,
-  altText: string | null,
+  url: string;
+  altText: string | null;
 };
 
 type ProductNode = {
-  id: string,
-  title: string,
-  handle: string,
-  featuredImage: ProductNodeImage | null,
+  id: string;
+  title: string;
+  handle: string;
+  featuredImage: ProductNodeImage | null;
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -70,9 +67,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (!node) {
       continue;
     }
-    
+
     const numericId = node.id.replace("gid://shopify/Product/", "");
-    
+
     products[numericId] = {
       id: numericId,
       title: node.title,
@@ -187,23 +184,25 @@ export const UsersTable = ({ storageData, products }: UsersTableProps) => {
                       <span style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                         {listData.products.map((productId, index) => {
                           const product = products[productId];
-                          
+
                           if (!product) {
                             return;
                           }
 
                           return (
                             <span key={productId}>
-                              <a href={product.url} target="_blank" rel="noreferrer">{product.title}</a>
+                              <a href={product.url} target="_blank" rel="noreferrer">
+                                {product.title}
+                              </a>
                               {index < listData.products.length - 1 ? "," : ""}
                             </span>
-                          )
+                          );
                         })}
                       </span>
                     )}
                   </s-table-cell>
                 </s-table-row>
-              ))
+              )),
             )}
           </s-table-body>
         </s-table>

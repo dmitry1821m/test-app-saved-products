@@ -3,23 +3,23 @@ import { authenticate } from "../shopify.server";
 import { getUserSavedProducts } from "../storage.server";
 
 type ProductNodeImage = {
-  url: string,
-  altText: string | null,
+  url: string;
+  altText: string | null;
 };
 
 type ProductNode = {
-  id: string,
-  title: string,
-  handle: string,
-  featuredImage: ProductNodeImage | null,
+  id: string;
+  title: string;
+  handle: string;
+  featuredImage: ProductNodeImage | null;
 };
 
 type Product = {
-  id: string,
-  title: string,
-  url: string,
-  image: string | null,
-  imageAlt: string,
+  id: string;
+  title: string;
+  url: string;
+  image: string | null;
+  imageAlt: string;
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -73,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const numericId = node.id.replace("gid://shopify/Product/", "");
-    
+
     const product: Product = {
       id: numericId,
       title: node.title,
