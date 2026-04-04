@@ -22,7 +22,7 @@ type Product = {
   imageAlt: string;
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.public.appProxy(request);
   const url = new URL(request.url);
   const customerId = url.searchParams.get("logged_in_customer_id");

@@ -12,7 +12,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
-export default function App() {
+const App = () => {
   const { apiKey } = useLoaderData<typeof loader>();
 
   return (
@@ -23,13 +23,15 @@ export default function App() {
       <Outlet />
     </AppProvider>
   );
-}
+};
 
 // Shopify needs React Router to catch some thrown responses, so that their headers are included in the response.
-export function ErrorBoundary() {
+export const ErrorBoundary = () => {
   return boundary.error(useRouteError());
-}
+};
 
 export const headers: HeadersFunction = (headersArgs) => {
   return boundary.headers(headersArgs);
 };
+
+export default App;

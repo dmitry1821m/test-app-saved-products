@@ -1,3 +1,3 @@
-export async function loader() {
+export const loader = async () => {
   return Response.json({ status: "ok" });
 }

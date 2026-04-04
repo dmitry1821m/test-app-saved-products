@@ -6,7 +6,7 @@ import {
   toggleProductInUserSavedProducts,
 } from "../storage.server";
 
-export async function action({ request }: ActionFunctionArgs) {
+export const action = async ({ request }: ActionFunctionArgs) => {
   await authenticate.public.appProxy(request);
 
   const url = new URL(request.url);

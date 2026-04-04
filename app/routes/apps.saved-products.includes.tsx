@@ -2,8 +2,9 @@ import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
 import { getUserSavedProducts } from "../storage.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.public.appProxy(request);
+
   const url = new URL(request.url);
   const customerId = url.searchParams.get("logged_in_customer_id");
   const productId = url.searchParams.get("product_id");
